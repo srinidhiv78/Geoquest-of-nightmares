@@ -2,7 +2,6 @@
 import re
 import requests
 import streamlit as st
-import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Geoquest-Of-Nightmares",
@@ -11,31 +10,22 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# -------------------- THEME --------------------
+# -------------------- BLUE-GREEN THEME --------------------
 
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(155deg, #061F2B 0%, #0B3945 52%, #10545A 100%);
+    background: linear-gradient(155deg, #061F2B, #0B3945 55%, #10545A);
     color: #F0FFFC;
 }
-header[data-testid="stHeader"] {
-    background: transparent;
-}
-footer {visibility: hidden;}
-#MainMenu {visibility: hidden;}
-
+header[data-testid="stHeader"] {background: transparent;}
+footer, #MainMenu {visibility: hidden;}
 .block-container {
     max-width: 1100px;
     padding-top: 2rem;
     padding-bottom: 3rem;
 }
-
-h1, h2, h3, p, label, .stMarkdown {
-    color: #F0FFFC;
-}
-h1, h2 { letter-spacing: 0.3px; }
-
+h1, h2, h3, p, label, .stMarkdown {color: #F0FFFC;}
 div.stButton > button,
 div.stFormSubmitButton > button,
 div.stLinkButton > a {
@@ -45,13 +35,11 @@ div.stLinkButton > a {
     border-radius: 14px;
     font-weight: 800;
     min-height: 3rem;
-    transition: 0.2s ease;
 }
 div.stButton > button:hover,
 div.stFormSubmitButton > button:hover {
     background: #7BF5DC;
-    border-color: #FFFFFF;
-    transform: translateY(-2px);
+    border-color: white;
 }
 div[data-testid="stForm"],
 div[data-testid="stExpander"] {
@@ -68,20 +56,9 @@ div[data-testid="stTextInput"] input {
 div[data-testid="stProgressBar"] > div > div {
     background: #55E3C5;
 }
-div[data-testid="stAlert"] {
-    border-radius: 14px;
-}
-.quest-card {
-    background: linear-gradient(135deg, #104653, #0C3946);
-    border: 1px solid #267A7C;
-    border-radius: 20px;
-    padding: 23px;
-    margin: 10px 0;
-    min-height: 155px;
-}
 .hero {
     text-align: center;
-    padding: 30px 12px 20px 12px;
+    padding: 30px 12px 20px;
 }
 .hero-title {
     color: #75F0D5;
@@ -105,26 +82,60 @@ div[data-testid="stAlert"] {
 .section-heading {
     text-align: center;
     color: #75F0D5;
-    font-size: 27px;
+    font-size: 26px;
     font-weight: 900;
     padding: 12px 0;
 }
-.centered { text-align: center; }
-.gold { color: #FFD777; }
-.small-note { color: #BFEAE2; font-size: 14px; }
+.quest-card {
+    background: linear-gradient(135deg, #104653, #0C3946);
+    border: 1px solid #267A7C;
+    border-radius: 20px;
+    padding: 22px;
+    margin: 10px 0;
+    min-height: 155px;
+}
+.small-note {
+    color: #BFEAE2;
+    font-size: 14px;
+    text-align: center;
+}
 </style>
 """, unsafe_allow_html=True)
 
 
-# -------------------- SECRET LOCATIONS --------------------
+# -------------------- FIXED PHOTOGRAPHS --------------------
+# Bahrain: one photo of Gudaibiya itself and three broader
+# Bahrain/Manama landmarks. They are regional visual clues.
+# Uttarakhand: four fixed photographs of the state.
 
 ROUNDS = [
     {
         "name": "Gudaibiya, Bahrain",
         "answer": ["gudaibiya", "bahrain"],
-        "photo_search": "Gudaibiya Bahrain",
         "lat": 26.2185,
         "lon": 50.5830,
+        "photos": [
+            {
+                "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gudaibiya%20Mosque.jpg",
+                "caption": "🇧🇭 Gudaibiya Mosque, Manama",
+                "source": "https://commons.wikimedia.org/wiki/File:Gudaibiya_Mosque.jpg",
+            },
+            {
+                "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Adliya%20Mosque%2C%20Bahrain.jpg",
+                "caption": "🕌 Adliya Mosque, Bahrain",
+                "source": "https://commons.wikimedia.org/wiki/File:Adliya_Mosque,_Bahrain.jpg",
+            },
+            {
+                "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Grand%20mosque%20in%20Bahrain.jpg",
+                "caption": "🏛️ Grand Mosque, Bahrain",
+                "source": "https://commons.wikimedia.org/wiki/File:Grand_mosque_in_Bahrain.jpg",
+            },
+            {
+                "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Manama%20Skyline.jpg",
+                "caption": "🌆 Manama skyline",
+                "source": "https://commons.wikimedia.org/wiki/File:Manama_Skyline.jpg",
+            },
+        ],
         "clues": [
             "🌍 This place is in the Middle East.",
             "🏝️ It is in an island country in the Persian Gulf.",
@@ -135,9 +146,9 @@ ROUNDS = [
     {
         "name": "Zagreb, Croatia",
         "answer": ["zagreb", "croatia"],
-        "photo_search": "Zagreb Croatia",
         "lat": 45.8150,
         "lon": 15.9819,
+        "photo_search": "Zagreb Croatia",
         "clues": [
             "🌍 This place is in Europe.",
             "🌊 The country borders the Adriatic Sea.",
@@ -148,9 +159,30 @@ ROUNDS = [
     {
         "name": "Uttarakhand, India",
         "answer": ["uttarakhand", "india"],
-        "photo_search": "Uttarakhand Himalayas India",
         "lat": 30.0869,
         "lon": 79.0193,
+        "photos": [
+            {
+                "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Auli%20Uttarakhand.jpg",
+                "caption": "🏔️ Auli mountain landscape",
+                "source": "https://commons.wikimedia.org/wiki/File:Auli_Uttarakhand.jpg",
+            },
+            {
+                "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nainital%20landscape.jpg",
+                "caption": "🌲 Nainital landscape",
+                "source": "https://commons.wikimedia.org/wiki/File:Nainital_landscape.jpg",
+            },
+            {
+                "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Mussoorie%20l%20Uttarakhand.jpg",
+                "caption": "🌄 Mussoorie hill town",
+                "source": "https://commons.wikimedia.org/wiki/File:Mussoorie_l_Uttarakhand.jpg",
+            },
+            {
+                "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kedarnath%20shrine.jpg",
+                "caption": "🛕 Kedarnath shrine and Himalayas",
+                "source": "https://commons.wikimedia.org/wiki/File:Kedarnath_shrine.jpg",
+            },
+        ],
         "clues": [
             "🌏 This place is in South Asia.",
             "🏔️ The Himalayas are a major geographical feature.",
@@ -161,9 +193,9 @@ ROUNDS = [
     {
         "name": "Khabarovsk, Russia",
         "answer": ["khabarovsk", "russia"],
-        "photo_search": "Khabarovsk Russia",
         "lat": 48.4802,
         "lon": 135.0719,
+        "photo_search": "Khabarovsk Russia",
         "clues": [
             "🌏 This place is in Asia.",
             "❄️ It is in the Russian Far East.",
@@ -174,11 +206,10 @@ ROUNDS = [
 ]
 
 
-# -------------------- LOCATION PHOTOS --------------------
+# -------------------- DYNAMIC PHOTOS FOR OTHER LEVELS --------------------
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_location_photos(search_term):
-    """Find location-related photographs on Wikimedia Commons."""
     try:
         response = requests.get(
             "https://commons.wikimedia.org/w/api.php",
@@ -194,7 +225,7 @@ def get_location_photos(search_term):
                 "format": "json",
             },
             headers={
-                "User-Agent": "GeoquestOfNightmares/1.0 (birthday game)"
+                "User-Agent": "GeoquestOfNightmares/1.0"
             },
             timeout=12,
         )
@@ -203,16 +234,26 @@ def get_location_photos(search_term):
 
         photos = []
         for page in sorted(
-            pages.values(), key=lambda item: item.get("index", 999)
+            pages.values(),
+            key=lambda item: item.get("index", 999),
         ):
             info = page.get("imageinfo", [{}])[0]
             image_url = info.get("thumburl") or info.get("url")
+
             if image_url and image_url.lower().endswith(
                 (".jpg", ".jpeg", ".png", ".webp")
             ):
+                title = page.get("title", "").replace("File:", "")
                 photos.append({
                     "url": image_url,
-                    "title": page.get("title", "").replace("File:", ""),
+                    "caption": "📸 " + title,
+                    "source": (
+                        "https://commons.wikimedia.org/wiki/"
+                        + requests.utils.quote(
+                            page.get("title", "").replace(" ", "_"),
+                            safe=":_",
+                        )
+                    ),
                 })
 
         return photos[:4]
@@ -220,7 +261,7 @@ def get_location_photos(search_term):
         return []
 
 
-# -------------------- GAME STATE --------------------
+# -------------------- SESSION STATE --------------------
 
 defaults = {
     "screen": "welcome",
@@ -248,8 +289,7 @@ def next_round():
 
 def reset_game():
     for key in defaults:
-        if key in st.session_state:
-            del st.session_state[key]
+        st.session_state.pop(key, None)
 
 
 # -------------------- WELCOME SCREEN --------------------
@@ -378,12 +418,12 @@ if i >= len(ROUNDS):
     st.stop()
 
 
-# -------------------- LEVEL SCREEN --------------------
+# -------------------- LEVEL HEADER --------------------
 
 place = ROUNDS[i]
 
 st.markdown(f"""
-<div class="hero" style="padding:5px 0 12px 0;">
+<div class="hero" style="padding:5px 0 12px;">
     <div style="font-size:28px;">🧭 🌍 🔍</div>
     <div class="hero-title" style="font-size:36px;">
         LEVEL {i + 1} / 4
@@ -400,6 +440,7 @@ st.markdown(f"""
 st.progress((i + 1) / 4)
 
 left, right = st.columns(2)
+
 with left:
     st.markdown(
         f'<div class="quest-card" style="min-height:90px;text-align:center;">'
@@ -411,6 +452,7 @@ with left:
 with right:
     hearts = "❤️" * st.session_state.lives
     empty_hearts = "🤍" * (4 - st.session_state.lives)
+
     st.markdown(
         f'<div class="quest-card" style="min-height:90px;text-align:center;">'
         f'<h3>💖 YOUR LIVES</h3>'
@@ -420,7 +462,7 @@ with right:
     )
 
 
-# -------------------- GAME OUTCOME --------------------
+# -------------------- ACTIVE GAME --------------------
 
 if st.session_state.status == "playing":
 
@@ -429,37 +471,47 @@ if st.session_state.status == "playing":
         unsafe_allow_html=True,
     )
 
-    with st.spinner("🔎 Searching for location photographs..."):
-        photos = get_location_photos(place["photo_search"])
+    if "photos" in place:
+        photos = place["photos"]
+    else:
+        with st.spinner("🔎 Searching for location photographs..."):
+            photos = get_location_photos(place["photo_search"])
 
     if photos:
-        photo_cols = st.columns(min(2, len(photos)))
-        for idx, photo in enumerate(photos):
-            with photo_cols[idx % len(photo_cols)]:
-                st.image(photo["url"], use_container_width=True)
-                st.caption("📷 " + photo["title"])
+        for start in range(0, len(photos), 2):
+            photo_cols = st.columns(2)
+
+            for col, photo in zip(
+                photo_cols,
+                photos[start:start + 2],
+            ):
+                with col:
+                    st.image(
+                        photo["url"],
+                        use_container_width=True,
+                    )
+                    st.caption(photo["caption"])
+                    st.markdown(
+                        f"[📜 View photo source]({photo['source']})"
+                    )
     else:
         st.warning(
-            "📸 We couldn't load location photos right now. "
-            "Use the exploration link below instead."
+            "📸 Photos could not be loaded right now. "
+            "Please refresh the game and try again."
         )
 
-    maps_url = (
-        "https://www.google.com/maps/search/?api=1&query="
-        f"{place['lat']},{place['lon']}"
-    )
-    street_url = (
-        "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint="
-        f"{place['lat']},{place['lon']}"
-    )
-
-    map_col, street_col = st.columns(2)
-    with map_col:
-        st.link_button("🗺️ Explore on Google Maps", maps_url,
-                       use_container_width=True)
-    with street_col:
-        st.link_button("🚶 Try Street View", street_url,
-                       use_container_width=True)
+    # No Google Maps button.
+    # Street View link is shown only for Croatia and Russia.
+    if i in (1, 3):
+        street_url = (
+            "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint="
+            f"{place['lat']},{place['lon']}"
+        )
+        st.link_button(
+            "🚶 TRY STREET VIEW 🌍",
+            street_url,
+            use_container_width=True,
+        )
 
     st.markdown(
         '<div class="section-heading">🧩 NEED A HINT? 💡</div>',
@@ -472,8 +524,12 @@ if st.session_state.status == "playing":
         )
 
         if st.session_state.clue_index < len(place["clues"]):
-            if st.button("💡 Reveal my next clue", key=f"clue_{i}"):
+            if st.button(
+                "💡 Reveal my next clue",
+                key=f"clue_{i}",
+            ):
                 st.session_state.lives -= 1
+
                 clue = place["clues"][st.session_state.clue_index]
                 st.session_state.clue_index += 1
                 st.session_state.clue_message = clue
@@ -498,18 +554,26 @@ if st.session_state.status == "playing":
             "Where in the world are you? 🌎",
             placeholder="Enter your guess...",
         )
+
         submitted = st.form_submit_button(
             "🔐 LOCK IN GUESS",
             use_container_width=True,
         )
 
     if submitted:
-        guess_clean = re.sub(r"[^a-z0-9 ]", " ", guess.lower())
+        guess_clean = re.sub(
+            r"[^a-z0-9 ]",
+            " ",
+            guess.lower(),
+        )
         guess_clean = " ".join(guess_clean.split())
 
-        # Only accept the intended answers/aliases as whole words.
+        # Accept the listed location or country as a whole-word answer.
         correct = any(
-            re.search(r"\b" + re.escape(answer) + r"\b", guess_clean)
+            re.search(
+                r"\b" + re.escape(answer) + r"\b",
+                guess_clean,
+            )
             for answer in place["answer"]
         )
 
@@ -531,8 +595,12 @@ if st.session_state.status == "playing":
     if st.session_state.last_guess_message:
         st.warning(st.session_state.last_guess_message)
 
+
+# -------------------- WIN SCREEN --------------------
+
 elif st.session_state.status == "won":
     st.balloons()
+
     st.markdown("""
     <div class="hero">
         <div style="font-size:50px;">⚡ 🎉 🎁 ⚡</div>
@@ -540,7 +608,9 @@ elif st.session_state.status == "won":
         <div class="hero-subtitle">😲 Pikachuuu, woahh!</div>
         <div class="hero-description">
             You cracked the mystery! 🧠<br>
-            <b style="color:#FFD777;">You advanced to the next level!</b>
+            <b style="color:#FFD777;">
+                You advanced to the next level!
+            </b>
         </div>
         <div style="font-size:34px;">🏆 💛 🎊 🎂</div>
     </div>
@@ -553,9 +623,15 @@ elif st.session_state.status == "won":
         width=220,
     )
 
-    if st.button("➡️ CONTINUE TO NEXT LEVEL", use_container_width=True):
+    if st.button(
+        "➡️ CONTINUE TO NEXT LEVEL",
+        use_container_width=True,
+    ):
         next_round()
         st.rerun()
+
+
+# -------------------- LOSS SCREEN --------------------
 
 elif st.session_state.status == "lost":
     st.markdown("""
@@ -576,16 +652,23 @@ elif st.session_state.status == "lost":
         width=180,
     )
 
-    if st.button("➡️ TRY THE NEXT LEVEL", use_container_width=True):
+    if st.button(
+        "➡️ TRY THE NEXT LEVEL",
+        use_container_width=True,
+    ):
         next_round()
         st.rerun()
 
+
+# -------------------- FOOTER --------------------
+
 st.markdown("---")
 st.markdown(
-    '<div class="centered small-note">'
-    '❤️ 4 lives per level &nbsp; • &nbsp; 🧩 Clue = −1 life '
-    '&nbsp; • &nbsp; ❌ Wrong guess = −1 life '
-    '&nbsp; • &nbsp; 🎁 Correct answer = gift unlocked'
+    '<div class="small-note">'
+    '❤️ 4 lives per level &nbsp; • &nbsp; '
+    '🧩 Clue = −1 life &nbsp; • &nbsp; '
+    '❌ Wrong guess = −1 life &nbsp; • &nbsp; '
+    '🎁 Correct answer = gift unlocked'
     '</div>',
     unsafe_allow_html=True,
 )
