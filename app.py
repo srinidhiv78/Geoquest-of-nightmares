@@ -3,38 +3,33 @@ import re
 import requests
 import streamlit as st
 
-# --------------------------------------------------
+# ==================================================
 # PAGE CONFIGURATION
-# --------------------------------------------------
+# ==================================================
 st.set_page_config(
     page_title="Geoquest-Of-Nightmares",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
-# --------------------------------------------------
-# THEME AND ANIMATIONS
-# --------------------------------------------------
+# ==================================================
+# THEME
+# ==================================================
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 .stApp {
-    background: radial-gradient(
-        ellipse at top,
-        #124b55 0%,
-        #092e3a 40%,
-        #061923 100%
-    );
+    background: radial-gradient(ellipse at top, #124b55 0%, #092e3a 40%, #061923 100%);
     color: #f3f5ed;
     font-family: 'Poppins', sans-serif;
 }
 
 .block-container {
     max-width: 1150px;
-    padding-top: 2rem;
-    padding-bottom: 3rem;
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
 }
 
 h1, h2, h3 {
@@ -51,7 +46,7 @@ p, label, li { color: #edf5f1; }
 div[data-testid="stMetric"] {
     background: rgba(16, 83, 91, 0.65);
     border: 1px solid rgba(85, 230, 209, 0.35);
-    padding: 15px;
+    padding: 12px;
     border-radius: 15px;
 }
 
@@ -65,7 +60,7 @@ div[data-testid="stMetricValue"] { color: #ffd777; }
     border: 1px solid #6ef5dd;
     border-radius: 12px;
     font-weight: 700;
-    min-height: 45px;
+    min-height: 43px;
     transition: 0.2s ease;
 }
 
@@ -87,22 +82,18 @@ div[data-testid="stMetricValue"] { color: #ffd777; }
     background: rgba(10, 52, 63, 0.82);
     border: 1px solid rgba(85, 230, 209, 0.4);
     border-radius: 20px;
-    padding: 24px;
-    margin: 14px 0;
+    padding: 20px;
+    margin: 12px 0;
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
 }
 
 .welcome-banner {
-    background: linear-gradient(
-        135deg,
-        rgba(14, 94, 102, 0.95),
-        rgba(9, 39, 54, 0.96)
-    );
+    background: linear-gradient(135deg, rgba(14, 94, 102, 0.95), rgba(9, 39, 54, 0.96));
     border: 2px solid #d9b65c;
     border-radius: 25px;
-    padding: 32px 24px;
+    padding: 28px 22px;
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 22px;
 }
 
 .pikachu-stage {
@@ -113,12 +104,11 @@ div[data-testid="stMetricValue"] { color: #ffd777; }
 
 @keyframes pikachu-jump {
     0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    15% { transform: translate(-55px, -30px) rotate(-12deg); }
-    30% { transform: translate(45px, -65px) rotate(12deg); }
-    45% { transform: translate(-35px, -15px) rotate(-9deg); }
-    60% { transform: translate(55px, -45px) rotate(10deg); }
-    75% { transform: translate(-25px, -35px) rotate(-8deg); }
-    90% { transform: translate(20px, -10px) rotate(5deg); }
+    15% { transform: translate(-45px, -30px) rotate(-12deg); }
+    30% { transform: translate(35px, -60px) rotate(12deg); }
+    45% { transform: translate(-30px, -15px) rotate(-9deg); }
+    60% { transform: translate(45px, -40px) rotate(10deg); }
+    75% { transform: translate(-20px, -25px) rotate(-8deg); }
 }
 
 .pikachu-happy {
@@ -137,11 +127,36 @@ div[data-testid="stMetricValue"] { color: #ffd777; }
     border-radius: 18px;
 }
 
+div[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0c3945, #071f2b);
+    border-right: 1px solid rgba(85, 230, 209, 0.4);
+}
+
+div[data-testid="stSidebar"] h2,
+div[data-testid="stSidebar"] h3 {
+    color: #ffd777 !important;
+}
+
+.lives-title {
+    text-align: center;
+    color: #55e6d1;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.lives-hearts {
+    text-align: center;
+    font-size: 1.65rem;
+    line-height: 1.8;
+    letter-spacing: 2px;
+    overflow-wrap: anywhere;
+}
+
 .footer-text {
     text-align: center;
     color: #8fcac5;
     font-size: 0.85rem;
-    margin-top: 35px;
 }
 
 hr { border-color: rgba(85, 230, 209, 0.3); }
@@ -153,9 +168,9 @@ hr { border-color: rgba(85, 230, 209, 0.3); }
 """, unsafe_allow_html=True)
 
 
-# --------------------------------------------------
-# LOCATION DATA
-# --------------------------------------------------
+# ==================================================
+# LOCATION DATA AND MULTIPLE CLUES
+# ==================================================
 ROUNDS = [
     {
         "name": "Gudaibiya",
@@ -164,14 +179,20 @@ ROUNDS = [
         "emoji": "🕌",
         "location_answers": ["gudaibiya", "gudabiya"],
         "country_answers": ["bahrain"],
-        "photo_search": "Gudaibiya Bahrain mosque buildings",
-        "clue": (
-            "This destination is in a small island country in the "
-            "Persian Gulf. Its capital city is Manama."
-        ),
+        "photo_searches": [
+            "Gudaibiya Bahrain mosque",
+            "Gudaibiya Manama Bahrain",
+            "Adliya Bahrain architecture",
+        ],
+        "clues": [
+            "This destination is in the Middle East.",
+            "It is in an island country in the Persian Gulf.",
+            "The country's capital is Manama.",
+            "The location's name begins with the letter G.",
+        ],
         "description": (
-            "Your first mystery destination is somewhere in the Middle "
-            "East. Look carefully at the architecture and surroundings!"
+            "Your first mystery destination is somewhere in the Middle East. "
+            "Study the architecture and surroundings carefully!"
         ),
         "gift": "🎁 Gift 1",
         "street_view": None,
@@ -183,14 +204,20 @@ ROUNDS = [
         "emoji": "🏰",
         "location_answers": ["zagreb"],
         "country_answers": ["croatia"],
-        "photo_search": "Zagreb Croatia city landmarks",
-        "clue": (
-            "This European capital is known for its historic Upper Town, "
-            "colourful rooftops and St. Mark's Church."
-        ),
+        "photo_searches": [
+            "Zagreb Croatia city",
+            "St Mark Church Zagreb Croatia",
+            "Zagreb Upper Town rooftops",
+        ],
+        "clues": [
+            "Your destination is in Europe.",
+            "It is the capital of its country.",
+            "The city is famous for its historic Upper Town and colourful rooftops.",
+            "The country's name begins with C, and the city begins with Z.",
+        ],
         "description": (
-            "Head to Europe! Search the architecture, rooftops and "
-            "cityscape for clues to this destination."
+            "Head to Europe! Look at the architecture, rooftops and "
+            "cityscape for clues."
         ),
         "gift": "🎁 Gift 2",
         "street_view": (
@@ -205,14 +232,20 @@ ROUNDS = [
         "emoji": "🏔️",
         "location_answers": ["uttarakhand"],
         "country_answers": ["india"],
-        "photo_search": "Uttarakhand India Himalayas mountains temples",
-        "clue": (
-            "This Indian state lies in the Himalayas and is famous for "
-            "mountains, pilgrimage sites and beautiful valleys."
-        ),
+        "photo_searches": [
+            "Uttarakhand India Himalayas",
+            "Uttarakhand mountain valley",
+            "Uttarakhand temples mountains",
+        ],
+        "clues": [
+            "Your destination is in Asia.",
+            "It is a state in northern India.",
+            "The Himalayas are a major feature of this region.",
+            "Its name begins with U and ends with 'hand'.",
+        ],
         "description": (
-            "Your next destination is in northern India. Look for "
-            "mountain landscapes, temples and Himalayan scenery."
+            "Your next destination is in northern India. Look for mountain "
+            "landscapes, temples and Himalayan scenery."
         ),
         "gift": "🎁 Gift 3",
         "street_view": None,
@@ -224,13 +257,19 @@ ROUNDS = [
         "emoji": "❄️",
         "location_answers": ["khabarovsk"],
         "country_answers": ["russia"],
-        "photo_search": "Khabarovsk Russia city Amur river landmarks",
-        "clue": (
-            "This Russian city lies near the Amur River in the country's "
-            "Far East, close to the Chinese border."
-        ),
+        "photo_searches": [
+            "Khabarovsk Russia city",
+            "Khabarovsk Amur River",
+            "Khabarovsk Russia architecture",
+        ],
+        "clues": [
+            "Your final destination is in Asia.",
+            "It is in the Far East of a very large country.",
+            "The Amur River flows near this city.",
+            "The city and country are both in Russia's eastern region.",
+        ],
         "description": (
-            "The final destination is in the Russian Far East. Look for "
+            "Your final destination is in the Russian Far East. Look for "
             "riverfront views, grand buildings and a colder climate."
         ),
         "gift": "🎁 Gift 4",
@@ -242,76 +281,123 @@ ROUNDS = [
 ]
 
 
-# --------------------------------------------------
+# ==================================================
 # PHOTO SEARCH
-# Photos display without captions or source links.
-# --------------------------------------------------
-@st.cache_data(ttl=3600, show_spinner=False)
-def get_location_photos(search_term, limit=4):
+# Uses Wikimedia Commons API with several search terms.
+# Results are displayed without captions or source links.
+# ==================================================
+@st.cache_data(ttl=900, show_spinner=False)
+def get_location_photos(search_terms, limit=4):
     api_url = "https://commons.wikimedia.org/w/api.php"
-
-    params = {
-        "action": "query",
-        "format": "json",
-        "generator": "search",
-        "gsrsearch": f"filetype:bitmap {search_term}",
-        "gsrnamespace": 6,
-        "gsrlimit": limit,
-        "prop": "imageinfo",
-        "iiprop": "url",
-        "iiurlwidth": 850,
-    }
-
     headers = {
-        "User-Agent": "GeoquestOfNightmares/1.0 (location guessing game)"
+        "User-Agent": (
+            "GeoquestOfNightmares/1.0 "
+            "(educational location guessing game)"
+        )
     }
 
-    try:
-        response = requests.get(
-            api_url,
-            params=params,
-            headers=headers,
-            timeout=15,
-        )
-        response.raise_for_status()
-        data = response.json()
+    photos = []
+    seen_urls = set()
 
-        pages = data.get("query", {}).get("pages", {})
-        photos = []
+    for term in search_terms:
+        if len(photos) >= limit:
+            break
 
-        for page in pages.values():
-            image_info = page.get("imageinfo", [])
-            if not image_info:
+        params = {
+            "action": "query",
+            "format": "json",
+            "list": "search",
+            "srsearch": term,
+            "srnamespace": 6,
+            "srlimit": 10,
+        }
+
+        try:
+            response = requests.get(
+                api_url,
+                params=params,
+                headers=headers,
+                timeout=20,
+            )
+            response.raise_for_status()
+            results = response.json().get("query", {}).get("search", [])
+
+            file_titles = [
+                item["title"]
+                for item in results
+                if item.get("title", "").lower().endswith(
+                    (".jpg", ".jpeg", ".png", ".webp")
+                )
+            ]
+
+            if not file_titles:
                 continue
 
-            image_data = image_info[0]
-            image_url = (
-                image_data.get("thumburl")
-                or image_data.get("url")
+            image_params = {
+                "action": "query",
+                "format": "json",
+                "titles": "|".join(file_titles),
+                "prop": "imageinfo",
+                "iiprop": "url",
+                "iiurlwidth": 850,
+            }
+
+            image_response = requests.get(
+                api_url,
+                params=image_params,
+                headers=headers,
+                timeout=20,
+            )
+            image_response.raise_for_status()
+
+            pages = (
+                image_response.json()
+                .get("query", {})
+                .get("pages", {})
             )
 
-            if image_url:
-                photos.append({
-                    "url": image_url,
-                    "caption": page.get("title", ""),
-                    "source": image_data.get("descriptionurl", ""),
-                })
+            for page in pages.values():
+                image_info = page.get("imageinfo", [])
+                if not image_info:
+                    continue
 
-        return photos[:limit]
+                image_data = image_info[0]
+                image_url = (
+                    image_data.get("thumburl")
+                    or image_data.get("url")
+                )
 
-    except (requests.RequestException, ValueError, KeyError):
-        return []
+                if (
+                    image_url
+                    and image_url not in seen_urls
+                    and image_url.startswith("https://")
+                ):
+                    seen_urls.add(image_url)
+                    photos.append({
+                        "url": image_url,
+                    })
+
+                    if len(photos) >= limit:
+                        break
+
+        except (
+            requests.RequestException,
+            ValueError,
+            KeyError,
+        ):
+            continue
+
+    return photos[:limit]
 
 
-# --------------------------------------------------
+# ==================================================
 # SESSION STATE
-# --------------------------------------------------
+# ==================================================
 defaults = {
     "screen": "welcome",
     "level": 0,
     "lives": 4,
-    "clue_used": False,
-    "clue_visible": False,
+    "clues_revealed": [],
     "completed": [],
     "lost": [],
     "last_message": "",
@@ -326,8 +412,7 @@ for key, value in defaults.items():
 
 def reset_round():
     st.session_state.lives = 4
-    st.session_state.clue_used = False
-    st.session_state.clue_visible = False
+    st.session_state.clues_revealed = []
     st.session_state.last_message = ""
     st.session_state.location_correct = False
     st.session_state.country_correct = False
@@ -342,24 +427,41 @@ def start_game():
 
 
 def normalize_answer(answer):
-    return re.sub(r"[^a-z0-9\s]", "", answer.lower()).strip()
+    return re.sub(
+        r"[^a-z0-9\s]",
+        "",
+        answer.lower(),
+    ).strip()
+
+
+def lose_round_if_needed():
+    if st.session_state.lives <= 0:
+        st.session_state.lives = 0
+        st.session_state.screen = "lost"
+
+        level = st.session_state.level
+        if (
+            level not in st.session_state.completed
+            and level not in st.session_state.lost
+        ):
+            st.session_state.lost.append(level)
 
 
 def use_clue():
-    if (
-        not st.session_state.clue_used
-        and st.session_state.lives > 0
-    ):
-        st.session_state.lives -= 1
-        st.session_state.clue_used = True
-        st.session_state.clue_visible = True
+    place = ROUNDS[st.session_state.level]
+    clue_index = len(st.session_state.clues_revealed)
 
-        if st.session_state.lives <= 0:
-            st.session_state.screen = "lost"
+    if st.session_state.lives <= 0:
+        return
 
-            level = st.session_state.level
-            if level not in st.session_state.lost:
-                st.session_state.lost.append(level)
+    if clue_index >= len(place["clues"]):
+        return
+
+    # Each newly revealed clue costs one life.
+    st.session_state.lives -= 1
+    st.session_state.clues_revealed.append(clue_index)
+
+    lose_round_if_needed()
 
 
 def check_answer(location_guess, country_guess):
@@ -378,7 +480,7 @@ def check_answer(location_guess, country_guess):
     st.session_state.location_correct = location_correct
     st.session_state.country_correct = country_correct
 
-    # Either correct answer clears the round.
+    # Either answer being correct clears the round.
     if location_correct or country_correct:
         st.session_state.screen = "won"
 
@@ -387,7 +489,6 @@ def check_answer(location_guess, country_guess):
                 st.session_state.level
             )
 
-        # Cheeky message if exactly one answer is correct.
         if location_correct != country_correct:
             st.session_state.last_message = (
                 "😏 Well, at least you got 1 thing right!"
@@ -400,17 +501,9 @@ def check_answer(location_guess, country_guess):
     else:
         st.session_state.lives -= 1
         st.session_state.last_message = (
-            "❌ Both answers are wrong! You lost one life. "
-            "Better luck on your next attempt!"
+            "❌ Both answers are wrong! You lost one life."
         )
-
-        if st.session_state.lives <= 0:
-            st.session_state.screen = "lost"
-
-            if st.session_state.level not in st.session_state.lost:
-                st.session_state.lost.append(
-                    st.session_state.level
-                )
+        lose_round_if_needed()
 
 
 def advance_level():
@@ -422,9 +515,56 @@ def advance_level():
         st.session_state.screen = "playing"
 
 
-# --------------------------------------------------
+# ==================================================
+# SIDEBAR: LIVE HEART DISPLAY
+# ==================================================
+if st.session_state.screen == "playing":
+    with st.sidebar:
+        st.markdown(
+            "<h2>❤️ YOUR LIVES</h2>",
+            unsafe_allow_html=True,
+        )
+
+        lives = st.session_state.lives
+        full_hearts = "❤️ " * lives
+        empty_hearts = "🖤 " * (4 - lives)
+
+        st.markdown(
+            f"""
+            <div class="lives-hearts">
+                {full_hearts}{empty_hearts}
+            </div>
+            <p style="text-align:center;color:#55e6d1;">
+                {lives} of 4 lives remaining
+            </p>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.divider()
+
+        st.markdown(
+            f"<h3>🧭 LEVEL {st.session_state.level + 1} / 4</h3>",
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            f"<p style='text-align:center;'>🎁 Gifts unlocked: "
+            f"{len(st.session_state.completed)} / 4</p>",
+            unsafe_allow_html=True,
+        )
+
+        st.progress(st.session_state.lives / 4)
+
+        st.caption(
+            "💡 Every clue costs one heart. "
+            "Every incorrect attempt costs one heart too!"
+        )
+
+
+# ==================================================
 # HEADER
-# --------------------------------------------------
+# ==================================================
 st.markdown(
     "<h1>⚡ GEOQUEST-OF-NIGHTMARES ⚡</h1>",
     unsafe_allow_html=True,
@@ -440,9 +580,9 @@ st.markdown(
 st.divider()
 
 
-# --------------------------------------------------
+# ==================================================
 # WELCOME SCREEN
-# --------------------------------------------------
+# ==================================================
 if st.session_state.screen == "welcome":
 
     st.markdown("""
@@ -470,7 +610,7 @@ if st.session_state.screen == "welcome":
             <p>❤️ ❤️ ❤️ ❤️</p>
             <p>You begin every round with four lives.</p>
             <p>❌ Both answers wrong? Lose one life.</p>
-            <p>💡 Asking for a clue costs one life.</p>
+            <p>💡 Every clue costs one life.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -490,12 +630,11 @@ if st.session_state.screen == "welcome":
         <h2>🌍 FOUR STOPS, FOUR GIFTS, ONE BIG ADVENTURE 🌍</h2>
         <p>🇧🇭 Bahrain &nbsp; ➜ &nbsp; 🇭🇷 Croatia</p>
         <p>🇮🇳 India &nbsp; ➜ &nbsp; 🇷🇺 Russia</p>
-        <p>🔍 Study the photographs. Use your clues wisely. Trust your instincts!</p>
+        <p>🔍 Study the photographs. Use your clues wisely.</p>
         <p>⚡ Are you ready, explorer? ⚡</p>
     </div>
     """, unsafe_allow_html=True)
 
-    st.write("")
     _, center, _ = st.columns([1, 2, 1])
 
     with center:
@@ -507,32 +646,19 @@ if st.session_state.screen == "welcome":
             st.rerun()
 
 
-# --------------------------------------------------
+# ==================================================
 # PLAYING SCREEN
-# --------------------------------------------------
+# ==================================================
 elif st.session_state.screen == "playing":
 
     level = st.session_state.level
     place = ROUNDS[level]
 
     st.markdown(
-        f"<h2>{place['flag']} LEVEL {level + 1}: MYSTERY DESTINATION {place['emoji']}</h2>",
+        f"<h2>{place['flag']} LEVEL {level + 1}: "
+        f"MYSTERY DESTINATION {place['emoji']}</h2>",
         unsafe_allow_html=True,
     )
-
-    metric1, metric2, metric3 = st.columns(3)
-
-    with metric1:
-        st.metric("🧭 LEVEL", f"{level + 1} / 4")
-
-    with metric2:
-        st.metric("❤️ LIVES LEFT", st.session_state.lives)
-
-    with metric3:
-        st.metric(
-            "🎁 GIFTS UNLOCKED",
-            len(st.session_state.completed),
-        )
 
     st.progress((level + 1) / len(ROUNDS))
 
@@ -549,9 +675,10 @@ elif st.session_state.screen == "playing":
         unsafe_allow_html=True,
     )
 
-    with st.spinner("📸 Loading mystery location photographs..."):
+    # Load several photos using multiple search terms.
+    with st.spinner("📸 Searching for location photographs..."):
         photos = get_location_photos(
-            place["photo_search"],
+            tuple(place["photo_searches"]),
             limit=4,
         )
 
@@ -564,15 +691,14 @@ elif st.session_state.screen == "playing":
                 photos[start:start + 2],
             ):
                 with col:
-                    # No caption or source link below the photo.
                     st.image(
                         photo["url"],
                         use_container_width=True,
                     )
     else:
         st.warning(
-            "📷 The photos could not be loaded right now. "
-            "Please refresh the app and try again."
+            "📷 Photos could not be retrieved from Wikimedia Commons. "
+            "Please check your internet connection or try refreshing."
         )
 
     if place["street_view"]:
@@ -581,7 +707,7 @@ elif st.session_state.screen == "playing":
             <div style="text-align:center;padding:12px;">
                 <a href="{place['street_view']}" target="_blank"
                    style="color:#55e6d1;font-weight:700;font-size:1.05rem;">
-                   🌐 Open Street View for a closer look
+                   🌐 OPEN STREET VIEW FOR A CLOSER LOOK
                 </a>
             </div>
             """,
@@ -590,27 +716,36 @@ elif st.session_state.screen == "playing":
 
     st.divider()
 
-    st.markdown("### 💡 Need a clue?")
+    # Multiple clues can be requested, one at a time.
+    st.markdown("### 💡 NEED A CLUE?")
 
-    clue_col, clue_text_col = st.columns([1, 2])
+    clues = place["clues"]
+    clues_used = len(st.session_state.clues_revealed)
 
-    with clue_col:
+    st.caption(
+        f"Clues revealed: {clues_used}/{len(clues)}. "
+        "Each new clue costs one heart."
+    )
+
+    if clues_used > 0:
+        for clue_number in st.session_state.clues_revealed:
+            st.info(
+                f"🧩 CLUE {clue_number + 1}: "
+                f"{clues[clue_number]}"
+            )
+
+    if clues_used < len(clues) and st.session_state.lives > 0:
         st.button(
-            "💡 USE A CLUE (-1 LIFE)",
+            f"💡 REVEAL CLUE {clues_used + 1} (-1 ❤️)",
             on_click=use_clue,
-            disabled=(
-                st.session_state.clue_used
-                or st.session_state.lives <= 0
-            ),
             use_container_width=True,
         )
+    elif clues_used >= len(clues):
+        st.success("🔍 You've used all the available clues!")
 
-    with clue_text_col:
-        if st.session_state.clue_visible:
-            st.info(f"🧩 CLUE: {place['clue']}")
+    st.divider()
 
-    # Two separate answer boxes.
-    st.markdown("### 🎯 Enter your two answers")
+    st.markdown("### 🎯 ENTER YOUR TWO ANSWERS")
 
     st.caption(
         "You only need ONE correct answer to clear the round. "
@@ -637,29 +772,26 @@ elif st.session_state.screen == "playing":
         )
 
     if submitted:
-        if not location_guess.strip() and not country_guess.strip():
+        if (
+            not location_guess.strip()
+            and not country_guess.strip()
+        ):
             st.warning("😏 At least TRY one of the boxes!")
         else:
             check_answer(location_guess, country_guess)
             st.rerun()
 
-    st.markdown(
-        "<div class='footer-text'>"
-        "🧭 Think carefully, explorer. Every life counts! ❤️"
-        "</div>",
-        unsafe_allow_html=True,
-    )
 
-
-# --------------------------------------------------
+# ==================================================
 # WIN SCREEN
-# --------------------------------------------------
+# ==================================================
 elif st.session_state.screen == "won":
 
     place = ROUNDS[st.session_state.level]
 
     st.markdown(
-        f"<h2>🎉 CORRECT! YOU CLEARED {place['name'].upper()}! 🎉</h2>",
+        f"<h2>🎉 CORRECT! YOU CLEARED "
+        f"{place['name'].upper()}! 🎉</h2>",
         unsafe_allow_html=True,
     )
 
@@ -670,42 +802,21 @@ elif st.session_state.screen == "won":
             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
             alt="Happy Pikachu jumping"
         />
-        <h3 style="text-align:center;color:#FFD777;">
+        <h3 style="color:#FFD777;">
             ⚡ PIKACHUUU, WOAHH! ⚡
         </h3>
-        <p style="text-align:center;font-size:1.1rem;">
+        <p style="font-size:1.1rem;">
             You advanced to the next level! 🎉
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Show the cheeky message when only one answer was correct.
-    if (
-        st.session_state.location_correct
-        != st.session_state.country_correct
-    ):
-        st.markdown("""
-        <div class="adventure-card"
-             style="text-align:center;border-color:#FFD777;">
-            <h2>😏 WELL, AT LEAST YOU GOT 1 THING RIGHT!</h2>
-            <p>One answer carried the whole team. We'll take it! 😂</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    else:
-        st.markdown("""
-        <div class="adventure-card" style="text-align:center;">
-            <h2>🧠 BOTH ANSWERS RIGHT!</h2>
-            <p>Okay, show-off. We see you! 🔥😎</p>
-        </div>
-        """, unsafe_allow_html=True)
-
     st.markdown(
         f"""
         <div class="adventure-card" style="text-align:center;">
-            <h2>🎁 YOU UNLOCKED {place['gift'].upper()} 🎁</h2>
+            <h2>{st.session_state.last_message}</h2>
             <p>{place['flag']} {place['name']}, {place['country']}</p>
-            <p>🏆 One more mystery solved! Keep that adventure spirit alive!</p>
+            <h3>🎁 YOU UNLOCKED {place['gift'].upper()} 🎁</h3>
         </div>
         """,
         unsafe_allow_html=True,
@@ -724,9 +835,9 @@ elif st.session_state.screen == "won":
             st.rerun()
 
 
-# --------------------------------------------------
+# ==================================================
 # LOSS SCREEN
-# --------------------------------------------------
+# ==================================================
 elif st.session_state.screen == "lost":
 
     place = ROUNDS[st.session_state.level]
@@ -743,7 +854,7 @@ elif st.session_state.screen == "lost":
             src="https://i.kym-cdn.com/photos/images/newsfeed/000/511/073/083.gif"
             alt="Crying Pikachu"
         />
-        <h3 style="text-align:center;color:#FF9AA8;">
+        <h3 style="color:#FF9AA8;">
             😭 YOU'RE A LOSER, PIKA! 💔
         </h3>
     </div>
@@ -753,7 +864,7 @@ elif st.session_state.screen == "lost":
         f"""
         <div class="adventure-card" style="text-align:center;">
             <h3>🎁 {place['gift']} REMAINS LOCKED</h3>
-            <p>You couldn't solve the mystery of {place['name']}, {place['country']}.</p>
+            <p>You couldn't solve {place['name']}, {place['country']}.</p>
             <p>Don't give up! There's another destination waiting for you.</p>
         </div>
         """,
@@ -773,16 +884,16 @@ elif st.session_state.screen == "lost":
             st.rerun()
 
 
-# --------------------------------------------------
+# ==================================================
 # FINAL RESULTS
-# --------------------------------------------------
+# ==================================================
 elif st.session_state.screen == "finished":
 
     st.markdown("""
     <div class="welcome-banner">
         <h1>🏆 ADVENTURE COMPLETE! 🏆</h1>
         <h2>🌍 YOU MADE IT THROUGH ALL FOUR LOCATIONS! 🌍</h2>
-        <p style="font-size:1.2rem;">
+        <p>
             Every destination had a mystery. Every round had a challenge.
             Now it's time to reveal your results!
         </p>
@@ -847,13 +958,4 @@ elif st.session_state.screen == "finished":
             st.rerun()
 
 
-# --------------------------------------------------
-# FOOTER
-# --------------------------------------------------
-st.markdown(
-    "<div class='footer-text'>"
-    "✨ MADE WITH ❤️, MYSTERY & A LITTLE BIT OF PIKACHU MAGIC ⚡"
-    "</div>",
-    unsafe_allow_html=True,
-)
 
