@@ -137,14 +137,6 @@ div[data-testid="stSidebar"] h3 {
     color: #ffd777 !important;
 }
 
-.lives-title {
-    text-align: center;
-    color: #55e6d1;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1rem;
-    font-weight: bold;
-}
-
 .lives-hearts {
     text-align: center;
     font-size: 1.65rem;
@@ -169,14 +161,14 @@ hr { border-color: rgba(85, 230, 209, 0.3); }
 
 
 # ==================================================
-# LOCATION DATA AND MULTIPLE CLUES
+# LOCATION DATA
+# Destination names are not displayed until a round ends.
 # ==================================================
 ROUNDS = [
     {
         "name": "Gudaibiya",
         "country": "Bahrain",
         "flag": "🇧🇭",
-        "emoji": "🕌",
         "location_answers": ["gudaibiya", "gudabiya"],
         "country_answers": ["bahrain"],
         "photo_searches": [
@@ -185,14 +177,15 @@ ROUNDS = [
             "Adliya Bahrain architecture",
         ],
         "clues": [
-            "This destination is in the Middle East.",
-            "It is in an island country in the Persian Gulf.",
-            "The country's capital is Manama.",
-            "The location's name begins with the letter G.",
+            "Your first destination is in a region known for its warm climate.",
+            "The destination is associated with a coastal island setting.",
+            "The country's capital is a busy city with a modern skyline.",
+            "The location's name begins with G.",
+            "The country's name begins with B.",
         ],
         "description": (
-            "Your first mystery destination is somewhere in the Middle East. "
-            "Study the architecture and surroundings carefully!"
+            "Study the photographs carefully. Look for architectural "
+            "details, buildings and the surrounding environment."
         ),
         "gift": "🎁 Gift 1",
         "street_view": None,
@@ -201,7 +194,6 @@ ROUNDS = [
         "name": "Zagreb",
         "country": "Croatia",
         "flag": "🇭🇷",
-        "emoji": "🏰",
         "location_answers": ["zagreb"],
         "country_answers": ["croatia"],
         "photo_searches": [
@@ -210,14 +202,15 @@ ROUNDS = [
             "Zagreb Upper Town rooftops",
         ],
         "clues": [
-            "Your destination is in Europe.",
-            "It is the capital of its country.",
-            "The city is famous for its historic Upper Town and colourful rooftops.",
-            "The country's name begins with C, and the city begins with Z.",
+            "Your destination is on the European continent.",
+            "It is a capital city with a historic old town.",
+            "The city has colourful rooftops and a famous church with a patterned roof.",
+            "The city's name begins with Z.",
+            "The country's name begins with C.",
         ],
         "description": (
-            "Head to Europe! Look at the architecture, rooftops and "
-            "cityscape for clues."
+            "Examine the architecture, rooftops, streets and landmarks. "
+            "Every detail might help you identify the destination."
         ),
         "gift": "🎁 Gift 2",
         "street_view": (
@@ -229,7 +222,6 @@ ROUNDS = [
         "name": "Uttarakhand",
         "country": "India",
         "flag": "🇮🇳",
-        "emoji": "🏔️",
         "location_answers": ["uttarakhand"],
         "country_answers": ["india"],
         "photo_searches": [
@@ -238,14 +230,15 @@ ROUNDS = [
             "Uttarakhand temples mountains",
         ],
         "clues": [
-            "Your destination is in Asia.",
-            "It is a state in northern India.",
-            "The Himalayas are a major feature of this region.",
-            "Its name begins with U and ends with 'hand'.",
+            "This destination is known for dramatic natural landscapes.",
+            "The region includes high mountain ranges and deep valleys.",
+            "Pilgrimage sites and temples are important features of the region.",
+            "The location is a state, not a city.",
+            "The state's name begins with U.",
         ],
         "description": (
-            "Your next destination is in northern India. Look for mountain "
-            "landscapes, temples and Himalayan scenery."
+            "Look carefully at the landscapes, buildings and surroundings. "
+            "Try to identify the place from the photographs."
         ),
         "gift": "🎁 Gift 3",
         "street_view": None,
@@ -254,7 +247,6 @@ ROUNDS = [
         "name": "Khabarovsk",
         "country": "Russia",
         "flag": "🇷🇺",
-        "emoji": "❄️",
         "location_answers": ["khabarovsk"],
         "country_answers": ["russia"],
         "photo_searches": [
@@ -263,14 +255,15 @@ ROUNDS = [
             "Khabarovsk Russia architecture",
         ],
         "clues": [
-            "Your final destination is in Asia.",
-            "It is in the Far East of a very large country.",
-            "The Amur River flows near this city.",
-            "The city and country are both in Russia's eastern region.",
+            "Your final destination is in a region known for cold winters.",
+            "A major river runs near the city.",
+            "The destination is known for its riverfront and historic buildings.",
+            "The city's name begins with K.",
+            "The country spans a very large area across Europe and Asia.",
         ],
         "description": (
-            "Your final destination is in the Russian Far East. Look for "
-            "riverfront views, grand buildings and a colder climate."
+            "Inspect the cityscape, riverfront and architecture. "
+            "Use the photographs to work out the mystery destination."
         ),
         "gift": "🎁 Gift 4",
         "street_view": (
@@ -283,16 +276,15 @@ ROUNDS = [
 
 # ==================================================
 # PHOTO SEARCH
-# Uses Wikimedia Commons API with several search terms.
-# Results are displayed without captions or source links.
 # ==================================================
 @st.cache_data(ttl=900, show_spinner=False)
 def get_location_photos(search_terms, limit=4):
     api_url = "https://commons.wikimedia.org/w/api.php"
+
     headers = {
         "User-Agent": (
             "GeoquestOfNightmares/1.0 "
-            "(educational location guessing game)"
+            "(location guessing game)"
         )
     }
 
@@ -303,24 +295,27 @@ def get_location_photos(search_terms, limit=4):
         if len(photos) >= limit:
             break
 
-        params = {
-            "action": "query",
-            "format": "json",
-            "list": "search",
-            "srsearch": term,
-            "srnamespace": 6,
-            "srlimit": 10,
-        }
-
         try:
+            search_params = {
+                "action": "query",
+                "format": "json",
+                "list": "search",
+                "srsearch": term,
+                "srnamespace": 6,
+                "srlimit": 10,
+            }
+
             response = requests.get(
                 api_url,
-                params=params,
+                params=search_params,
                 headers=headers,
                 timeout=20,
             )
             response.raise_for_status()
-            results = response.json().get("query", {}).get("search", [])
+
+            results = response.json().get(
+                "query", {}
+            ).get("search", [])
 
             file_titles = [
                 item["title"]
@@ -350,14 +345,13 @@ def get_location_photos(search_terms, limit=4):
             )
             image_response.raise_for_status()
 
-            pages = (
-                image_response.json()
-                .get("query", {})
-                .get("pages", {})
-            )
+            pages = image_response.json().get(
+                "query", {}
+            ).get("pages", {})
 
             for page in pages.values():
                 image_info = page.get("imageinfo", [])
+
                 if not image_info:
                     continue
 
@@ -369,13 +363,11 @@ def get_location_photos(search_terms, limit=4):
 
                 if (
                     image_url
-                    and image_url not in seen_urls
                     and image_url.startswith("https://")
+                    and image_url not in seen_urls
                 ):
                     seen_urls.add(image_url)
-                    photos.append({
-                        "url": image_url,
-                    })
+                    photos.append({"url": image_url})
 
                     if len(photos) >= limit:
                         break
@@ -434,34 +426,34 @@ def normalize_answer(answer):
     ).strip()
 
 
-def lose_round_if_needed():
-    if st.session_state.lives <= 0:
-        st.session_state.lives = 0
-        st.session_state.screen = "lost"
+def end_round_as_lost():
+    st.session_state.lives = 0
+    st.session_state.screen = "lost"
 
-        level = st.session_state.level
-        if (
-            level not in st.session_state.completed
-            and level not in st.session_state.lost
-        ):
-            st.session_state.lost.append(level)
+    level = st.session_state.level
+
+    if (
+        level not in st.session_state.completed
+        and level not in st.session_state.lost
+    ):
+        st.session_state.lost.append(level)
 
 
 def use_clue():
     place = ROUNDS[st.session_state.level]
     clue_index = len(st.session_state.clues_revealed)
 
-    if st.session_state.lives <= 0:
+    # If the player has no lives left, the next clue request ends
+    # the round. Reaching zero lives alone does not end it.
+    if st.session_state.lives == 0:
+        end_round_as_lost()
         return
 
     if clue_index >= len(place["clues"]):
         return
 
-    # Each newly revealed clue costs one life.
     st.session_state.lives -= 1
     st.session_state.clues_revealed.append(clue_index)
-
-    lose_round_if_needed()
 
 
 def check_answer(location_guess, country_guess):
@@ -480,7 +472,7 @@ def check_answer(location_guess, country_guess):
     st.session_state.location_correct = location_correct
     st.session_state.country_correct = country_correct
 
-    # Either answer being correct clears the round.
+    # A correct answer clears the round even at zero lives.
     if location_correct or country_correct:
         st.session_state.screen = "won"
 
@@ -498,12 +490,18 @@ def check_answer(location_guess, country_guess):
                 "🔥 BOTH answers correct! Look at you, genius!"
             )
 
+        return
+
+    # If lives were already zero before this wrong guess, the
+    # round ends now. Otherwise, deduct one life and let the
+    # player continue, even if the count becomes zero.
+    if st.session_state.lives == 0:
+        end_round_as_lost()
     else:
         st.session_state.lives -= 1
         st.session_state.last_message = (
-            "❌ Both answers are wrong! You lost one life."
+            "❌ Both answers are wrong! You lost one heart."
         )
-        lose_round_if_needed()
 
 
 def advance_level():
@@ -516,14 +514,11 @@ def advance_level():
 
 
 # ==================================================
-# SIDEBAR: LIVE HEART DISPLAY
+# SIDEBAR: HEARTS
 # ==================================================
 if st.session_state.screen == "playing":
     with st.sidebar:
-        st.markdown(
-            "<h2>❤️ YOUR LIVES</h2>",
-            unsafe_allow_html=True,
-        )
+        st.markdown("<h2>❤️ YOUR LIVES</h2>", unsafe_allow_html=True)
 
         lives = st.session_state.lives
         full_hearts = "❤️ " * lives
@@ -544,21 +539,21 @@ if st.session_state.screen == "playing":
         st.divider()
 
         st.markdown(
-            f"<h3>🧭 LEVEL {st.session_state.level + 1} / 4</h3>",
+            f"<h3>LEVEL {st.session_state.level + 1} / 4</h3>",
             unsafe_allow_html=True,
         )
 
         st.markdown(
-            f"<p style='text-align:center;'>🎁 Gifts unlocked: "
-            f"{len(st.session_state.completed)} / 4</p>",
+            f"<p style='text-align:center;'>"
+            f"🎁 Gifts unlocked: {len(st.session_state.completed)} / 4</p>",
             unsafe_allow_html=True,
         )
 
         st.progress(st.session_state.lives / 4)
 
         st.caption(
-            "💡 Every clue costs one heart. "
-            "Every incorrect attempt costs one heart too!"
+            "💡 Each clue costs one heart. "
+            "A wrong answer also costs one heart."
         )
 
 
@@ -593,8 +588,8 @@ if st.session_state.screen == "welcome":
             Think you can find them all? 🔍⚡🎁
         </p>
         <p>
-            Travel around the world through pictures, clues and guesses.
-            Every location hides a surprise!
+            Explore photographs, solve mysteries and unlock surprises.
+            Can you make it through all four rounds?
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -606,30 +601,29 @@ if st.session_state.screen == "welcome":
     with col1:
         st.markdown("""
         <div class="adventure-card">
-            <h3>❤️ Your Lives</h3>
+            <h3>❤️ YOUR LIVES</h3>
             <p>❤️ ❤️ ❤️ ❤️</p>
-            <p>You begin every round with four lives.</p>
-            <p>❌ Both answers wrong? Lose one life.</p>
-            <p>💡 Every clue costs one life.</p>
+            <p>You begin each round with four lives.</p>
+            <p>❌ Each wrong answer costs one life.</p>
+            <p>💡 Each new clue costs one life.</p>
+            <p>⚠️ Reaching zero lives doesn't end the round immediately.</p>
         </div>
         """, unsafe_allow_html=True)
 
     with col2:
         st.markdown("""
         <div class="adventure-card">
-            <h3>🎁 Your Gifts</h3>
-            <p>🗺️ Enter the location and country separately.</p>
-            <p>🎯 Either answer correct means you clear the round.</p>
-            <p>🎁 Clear the round to unlock its gift.</p>
-            <p>💔 Lose all four lives and that round's gift is lost.</p>
+            <h3>🎁 YOUR GIFTS</h3>
+            <p>📍 Enter your location guess in the first box.</p>
+            <p>🌍 Enter your country guess in the second box.</p>
+            <p>🎯 Either answer correct clears the round.</p>
+            <p>💔 Another mistake at zero lives ends the round.</p>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="adventure-card" style="text-align:center;">
         <h2>🌍 FOUR STOPS, FOUR GIFTS, ONE BIG ADVENTURE 🌍</h2>
-        <p>🇧🇭 Bahrain &nbsp; ➜ &nbsp; 🇭🇷 Croatia</p>
-        <p>🇮🇳 India &nbsp; ➜ &nbsp; 🇷🇺 Russia</p>
         <p>🔍 Study the photographs. Use your clues wisely.</p>
         <p>⚡ Are you ready, explorer? ⚡</p>
     </div>
@@ -638,10 +632,7 @@ if st.session_state.screen == "welcome":
     _, center, _ = st.columns([1, 2, 1])
 
     with center:
-        if st.button(
-            "🚀 START LEVEL 1 🚀",
-            use_container_width=True,
-        ):
+        if st.button("🚀 START LEVEL 1 🚀", use_container_width=True):
             start_game()
             st.rerun()
 
@@ -654,9 +645,9 @@ elif st.session_state.screen == "playing":
     level = st.session_state.level
     place = ROUNDS[level]
 
+    # No flags or destination names before the answer is revealed.
     st.markdown(
-        f"<h2>{place['flag']} LEVEL {level + 1}: "
-        f"MYSTERY DESTINATION {place['emoji']}</h2>",
+        f"<h2>🔎 LEVEL {level + 1}: MYSTERY DESTINATION</h2>",
         unsafe_allow_html=True,
     )
 
@@ -665,18 +656,17 @@ elif st.session_state.screen == "playing":
     st.markdown(
         f"""
         <div class="adventure-card">
-            <h3>🔎 INVESTIGATE THE LOCATION 🔎</h3>
+            <h3>🧭 INVESTIGATE THE LOCATION 🧭</h3>
             <p style="text-align:center;">{place['description']}</p>
             <p style="text-align:center;">
-                📸 Examine the photographs and work out where you are!
+                📸 Examine the photographs. Every detail might help!
             </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # Load several photos using multiple search terms.
-    with st.spinner("📸 Searching for location photographs..."):
+    with st.spinner("📸 Searching for mystery location photographs..."):
         photos = get_location_photos(
             tuple(place["photo_searches"]),
             limit=4,
@@ -698,7 +688,7 @@ elif st.session_state.screen == "playing":
     else:
         st.warning(
             "📷 Photos could not be retrieved from Wikimedia Commons. "
-            "Please check your internet connection or try refreshing."
+            "Please check your connection and try refreshing."
         )
 
     if place["street_view"]:
@@ -716,7 +706,9 @@ elif st.session_state.screen == "playing":
 
     st.divider()
 
-    # Multiple clues can be requested, one at a time.
+    # ----------------------------------------------
+    # CLUES
+    # ----------------------------------------------
     st.markdown("### 💡 NEED A CLUE?")
 
     clues = place["clues"]
@@ -727,29 +719,36 @@ elif st.session_state.screen == "playing":
         "Each new clue costs one heart."
     )
 
-    if clues_used > 0:
-        for clue_number in st.session_state.clues_revealed:
-            st.info(
-                f"🧩 CLUE {clue_number + 1}: "
-                f"{clues[clue_number]}"
-            )
+    for clue_number in st.session_state.clues_revealed:
+        st.info(
+            f"🧩 CLUE {clue_number + 1}: {clues[clue_number]}"
+        )
 
-    if clues_used < len(clues) and st.session_state.lives > 0:
+    # The fifth clue button remains available when lives reach zero.
+    # Pressing it at zero ends the round instead of revealing another clue.
+    if clues_used < len(clues):
+        button_label = (
+            "💔 TRY ANOTHER CLUE (ROUND ENDS)"
+            if st.session_state.lives == 0
+            else f"💡 REVEAL CLUE {clues_used + 1} (-1 ❤️)"
+        )
+
         st.button(
-            f"💡 REVEAL CLUE {clues_used + 1} (-1 ❤️)",
+            button_label,
             on_click=use_clue,
             use_container_width=True,
         )
-    elif clues_used >= len(clues):
-        st.success("🔍 You've used all the available clues!")
 
     st.divider()
 
+    # ----------------------------------------------
+    # ANSWERS
+    # ----------------------------------------------
     st.markdown("### 🎯 ENTER YOUR TWO ANSWERS")
 
     st.caption(
         "You only need ONE correct answer to clear the round. "
-        "But let's see if you can get both! 😏"
+        "But can you get both? 😏"
     )
 
     with st.form(f"answer_form_{level}"):
@@ -780,6 +779,12 @@ elif st.session_state.screen == "playing":
         else:
             check_answer(location_guess, country_guess)
             st.rerun()
+
+    if (
+        st.session_state.last_message
+        and st.session_state.screen == "playing"
+    ):
+        st.warning(st.session_state.last_message)
 
 
 # ==================================================
@@ -822,10 +827,11 @@ elif st.session_state.screen == "won":
         unsafe_allow_html=True,
     )
 
-    if st.session_state.level < len(ROUNDS) - 1:
-        button_text = "⚡ ADVANCE TO THE NEXT LEVEL ⚡"
-    else:
-        button_text = "🏆 CLAIM YOUR FINAL VICTORY 🏆"
+    button_text = (
+        "⚡ ADVANCE TO THE NEXT LEVEL ⚡"
+        if st.session_state.level < len(ROUNDS) - 1
+        else "🏆 CLAIM YOUR FINAL VICTORY 🏆"
+    )
 
     _, center, _ = st.columns([1, 2, 1])
 
@@ -860,21 +866,23 @@ elif st.session_state.screen == "lost":
     </div>
     """, unsafe_allow_html=True)
 
+    # The answer is revealed after the round has ended.
     st.markdown(
         f"""
         <div class="adventure-card" style="text-align:center;">
-            <h3>🎁 {place['gift']} REMAINS LOCKED</h3>
-            <p>You couldn't solve {place['name']}, {place['country']}.</p>
-            <p>Don't give up! There's another destination waiting for you.</p>
+            <h3>🔎 THE ANSWER WAS {place['name'].upper()}, {place['country'].upper()}!</h3>
+            <p>🎁 {place['gift']} remains locked.</p>
+            <p>There's another destination waiting for you!</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    if st.session_state.level < len(ROUNDS) - 1:
-        button_text = "🧭 CONTINUE TO THE NEXT LOCATION"
-    else:
-        button_text = "🏁 SEE MY FINAL RESULTS"
+    button_text = (
+        "🧭 CONTINUE TO THE NEXT LOCATION"
+        if st.session_state.level < len(ROUNDS) - 1
+        else "🏁 SEE MY FINAL RESULTS"
+    )
 
     _, center, _ = st.columns([1, 2, 1])
 
@@ -956,6 +964,8 @@ elif st.session_state.screen == "finished":
         if st.button("🔄 PLAY AGAIN", use_container_width=True):
             start_game()
             st.rerun()
+
+
 
 
 
